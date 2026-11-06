@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <rect width="300" height="200" fill="#0f172a"/>
+  <rect x="10" y="10" width="280" height="180" fill="#1e293b" stroke="#94a3b8" stroke-width="2" rx="4"/>
+  <text x="20" y="35" fill="#94a3b8" font-family="monospace" font-size="12" font-weight="bold">[CAM_03_NH48 // TRACK #302]</text>
+  <rect x="70" y="95" width="160" height="45" fill="#94a3b8" rx="4"/>
+  <path d="M 100 95 L 120 75 L 180 75 L 200 95 Z" fill="#64748b"/>
+  <circle cx="105" cy="145" r="14" fill="#0f172a" stroke="#475569" stroke-width="3"/>
+  <circle cx="195" cy="145" r="14" fill="#0f172a" stroke="#475569" stroke-width="3"/>
+  <text x="20" y="175" fill="#94a3b8" font-family="monospace" font-size="10">STATIONARY VEHICLE | 12:00.0s</text>
+  <text x="200" y="175" fill="#fbbf24" font-family="monospace" font-size="10">SHOULDER STOP</text>
+</svg>

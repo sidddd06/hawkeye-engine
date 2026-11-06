@@ -1,0 +1,11 @@
+# HawkEye / BountyCam - Open Issues & Risk Register
+
+---
+
+| Issue ID | Category | Description | Severity | Mitigation / Resolution Strategy | Status |
+|----------|----------|-------------|----------|----------------------------------|--------|
+| **ISS-01** | **Python Environment** | System default Python is version 3.14.7. Some deep learning libraries (PyTorch, FAISS, PyAV) may lack official prebuilt Windows wheels for Python 3.14. | High | Test package installation in virtual environment. If Python 3.14 lacks binary wheels, establish virtual environment or use compatible builds / onnxruntime / faiss-cpu fallback. | Under Investigation |
+| **ISS-02** | **Gemini Flash Offline Fallback** | Stage 4 Precision Verifier queries `gemini-2.5-flash` via API. In an air-gapped forensic environment or without a `GEMINI_API_KEY`, cloud calls will fail. | Medium | Implement dual-mode verifier: live Gemini Flash API when key is present; high-confidence local heuristic + SigLIP score verification when offline or key is omitted. | Architecture Defined |
+| **ISS-03** | **Hardware Acceleration & VRAM Allocation** | System has NVIDIA GeForce RTX 4070 (8GB VRAM). Concurrent execution of YOLOv8 + SigLIP could cause OOM if batches are too large. | Medium | Enforce FP16 half-precision and sequential batch processing (YOLOv8 runs, deduplicates crops, then SigLIP embeds deduplicated crops in batches of 16-32 with torch.no_grad() and torch.cuda.empty_cache()). | Mitigated by Design |
+| **ISS-04** | **HTML5 Video Seeking Precision** | Standard HTML5 `<video>` elements snap to keyframes during rapid seeks, creating slight timestamp desynchronization (±0.5s) relative to indexed tracklet timestamps. | Low | Include canvas bounding box interpolation and high-precision `video.currentTime = targetTime` event listeners with `seeked` callback synchronization. | Mitigated by Design |
+| **ISS-05** | **DVR Codec Diversity** | Real-world CCTV dumps vary across H.264, H.265 (HEVC), and proprietary AVI wrappers. | Medium | PyAV / FFmpeg demuxer handles virtually all standard container and codec variants natively. Include pre-transcode helper script if non-standard stream index is detected. | Architecture Defined |

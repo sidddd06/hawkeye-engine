@@ -1,0 +1,170 @@
+[
+  {
+    "track_id": 101,
+    "camera_id": "CAM_01_GATE",
+    "start_time_sec": 42.0,
+    "end_time_sec": 45.4,
+    "best_timestamp_sec": 43.6,
+    "object_class": "motorcycle",
+    "crop_url": "/mock_crops/track_101.jpg",
+    "is_ir_night_mode": false,
+    "avg_saturation": 84.6,
+    "trajectory": [
+      { "timestamp_sec": 42.0, "x1": 120, "y1": 340, "x2": 260, "y2": 490, "cx": 190, "cy": 415 },
+      { "timestamp_sec": 42.8, "x1": 210, "y1": 330, "x2": 350, "y2": 480, "cx": 280, "cy": 405 },
+      { "timestamp_sec": 43.6, "x1": 340, "y1": 310, "x2": 490, "y2": 470, "cx": 415, "cy": 390 },
+      { "timestamp_sec": 44.5, "x1": 490, "y1": 290, "x2": 630, "y2": 450, "cx": 560, "cy": 370 },
+      { "timestamp_sec": 45.4, "x1": 650, "y1": 270, "x2": 800, "y2": 430, "cx": 725, "cy": 350 }
+    ],
+    "similarity_score": 0.942,
+    "gemini_verification": "VERIFIED: Red Bajaj Pulsar 150 motorcycle with black alloys. Male rider wearing bright blue nylon backpack and dark red windbreaker jacket. License plate fragment 'UP-16-EK-****' visible.",
+    "sha256_frame_hash": "a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0"
+  },
+  {
+    "track_id": 102,
+    "camera_id": "CAM_01_GATE",
+    "start_time_sec": 110.0,
+    "end_time_sec": 118.5,
+    "best_timestamp_sec": 114.2,
+    "object_class": "person",
+    "crop_url": "/mock_crops/track_102.jpg",
+    "is_ir_night_mode": false,
+    "avg_saturation": 48.2,
+    "trajectory": [
+      { "timestamp_sec": 110.0, "x1": 50, "y1": 220, "x2": 130, "y2": 440, "cx": 90, "cy": 330 },
+      { "timestamp_sec": 112.1, "x1": 140, "y1": 215, "x2": 220, "y2": 435, "cx": 180, "cy": 325 },
+      { "timestamp_sec": 114.2, "x1": 240, "y1": 210, "x2": 320, "y2": 430, "cx": 280, "cy": 320 },
+      { "timestamp_sec": 116.3, "x1": 340, "y1": 205, "x2": 420, "y2": 425, "cx": 380, "cy": 315 },
+      { "timestamp_sec": 118.5, "x1": 450, "y1": 200, "x2": 530, "y2": 420, "cx": 490, "cy": 310 }
+    ],
+    "similarity_score": 0.825,
+    "gemini_verification": "VERIFIED: Pedestrian in navy blue uniform trousers and beige shirt carrying black tactical duffel bag in right hand. No face mask.",
+    "sha256_frame_hash": "b2c3d4e5f6a17890123456789abcdef0123456789abcdef0123456789abcdef1"
+  },
+  {
+    "track_id": 103,
+    "camera_id": "CAM_02_HOSTEL_RD",
+    "start_time_sec": 195.0,
+    "end_time_sec": 199.2,
+    "best_timestamp_sec": 197.1,
+    "object_class": "motorcycle",
+    "crop_url": "/mock_crops/track_103.jpg",
+    "is_ir_night_mode": false,
+    "avg_saturation": 79.1,
+    "trajectory": [
+      { "timestamp_sec": 195.0, "x1": 180, "y1": 400, "x2": 310, "y2": 550, "cx": 245, "cy": 475 },
+      { "timestamp_sec": 196.0, "x1": 300, "y1": 380, "x2": 440, "y2": 530, "cx": 370, "cy": 455 },
+      { "timestamp_sec": 197.1, "x1": 430, "y1": 350, "x2": 580, "y2": 500, "cx": 505, "cy": 425 },
+      { "timestamp_sec": 198.2, "x1": 560, "y1": 320, "x2": 710, "y2": 470, "cx": 635, "cy": 395 },
+      { "timestamp_sec": 199.2, "x1": 700, "y1": 300, "x2": 850, "y2": 450, "cx": 775, "cy": 375 }
+    ],
+    "similarity_score": 0.961,
+    "gemini_verification": "VERIFIED RE-ID: Target matching Tracklet #101. Red sports motorcycle, rider with blue backpack speeding southbound on Hostel Road toward NH48 exit.",
+    "sha256_frame_hash": "c3d4e5f6a1b27890123456789abcdef0123456789abcdef0123456789abcdef2"
+  },
+  {
+    "track_id": 104,
+    "camera_id": "CAM_03_NH48",
+    "start_time_sec": 340.0,
+    "end_time_sec": 343.8,
+    "best_timestamp_sec": 341.9,
+    "object_class": "motorcycle",
+    "crop_url": "/mock_crops/track_104.jpg",
+    "is_ir_night_mode": false,
+    "avg_saturation": 81.3,
+    "trajectory": [
+      { "timestamp_sec": 340.0, "x1": 80, "y1": 460, "x2": 210, "y2": 590, "cx": 145, "cy": 525 },
+      { "timestamp_sec": 340.9, "x1": 210, "y1": 440, "x2": 350, "y2": 570, "cx": 280, "cy": 505 },
+      { "timestamp_sec": 341.9, "x1": 370, "y1": 410, "x2": 520, "y2": 550, "cx": 445, "cy": 480 },
+      { "timestamp_sec": 342.8, "x1": 550, "y1": 380, "x2": 700, "y2": 520, "cx": 625, "cy": 450 },
+      { "timestamp_sec": 343.8, "x1": 740, "y1": 350, "x2": 900, "y2": 490, "cx": 820, "cy": 420 }
+    ],
+    "similarity_score": 0.953,
+    "gemini_verification": "VERIFIED HIGHWAY MERGE: Red motorcycle with blue backpack entering NH48 highway slip road at approx 52 km/h. High confidence escape trajectory match.",
+    "sha256_frame_hash": "d4e5f6a1b2c37890123456789abcdef0123456789abcdef0123456789abcdef3"
+  },
+  {
+    "track_id": 201,
+    "camera_id": "CAM_01_GATE",
+    "start_time_sec": 8040.0,
+    "end_time_sec": 8052.4,
+    "best_timestamp_sec": 8045.2,
+    "object_class": "person",
+    "crop_url": "/mock_crops/track_201.jpg",
+    "is_ir_night_mode": true,
+    "avg_saturation": 5.4,
+    "trajectory": [
+      { "timestamp_sec": 8040.0, "x1": 720, "y1": 150, "x2": 800, "y2": 340, "cx": 760, "cy": 245 },
+      { "timestamp_sec": 8042.8, "x1": 690, "y1": 180, "x2": 770, "y2": 370, "cx": 730, "cy": 275 },
+      { "timestamp_sec": 8045.2, "x1": 640, "y1": 220, "x2": 720, "y2": 410, "cx": 680, "cy": 315 },
+      { "timestamp_sec": 8048.5, "x1": 580, "y1": 260, "x2": 660, "y2": 450, "cx": 620, "cy": 355 },
+      { "timestamp_sec": 8052.4, "x1": 500, "y1": 300, "x2": 580, "y2": 490, "cx": 540, "cy": 395 }
+    ],
+    "similarity_score": 0.887,
+    "gemini_verification": "VERIFIED IR NIGHT VISION: Individual scaling north perimeter security fence at 02:14 AM. Monochrome silhouette with reflective shoe accents and hooded sweatshirt.",
+    "sha256_frame_hash": "e5f6a1b2c3d47890123456789abcdef0123456789abcdef0123456789abcdef4"
+  },
+  {
+    "track_id": 202,
+    "camera_id": "CAM_02_HOSTEL_RD",
+    "start_time_sec": 8338.0,
+    "end_time_sec": 8351.0,
+    "best_timestamp_sec": 8344.6,
+    "object_class": "person",
+    "crop_url": "/mock_crops/track_202.jpg",
+    "is_ir_night_mode": true,
+    "avg_saturation": 6.8,
+    "trajectory": [
+      { "timestamp_sec": 8338.0, "x1": 310, "y1": 280, "x2": 390, "y2": 480, "cx": 350, "cy": 380 },
+      { "timestamp_sec": 8341.2, "x1": 330, "y1": 290, "x2": 410, "y2": 490, "cx": 370, "cy": 390 },
+      { "timestamp_sec": 8344.6, "x1": 360, "y1": 300, "x2": 440, "y2": 500, "cx": 400, "cy": 400 },
+      { "timestamp_sec": 8347.8, "x1": 400, "y1": 310, "x2": 480, "y2": 510, "cx": 440, "cy": 410 },
+      { "timestamp_sec": 8351.0, "x1": 460, "y1": 320, "x2": 540, "y2": 520, "cx": 500, "cy": 420 }
+    ],
+    "similarity_score": 0.864,
+    "gemini_verification": "VERIFIED IR NIGHT VISION: Loitering actor near bicycle stand behind hostel block. Wearing hooded pullover; checking parked bicycle locks.",
+    "sha256_frame_hash": "f6a1b2c3d4e57890123456789abcdef0123456789abcdef0123456789abcdef5"
+  },
+  {
+    "track_id": 301,
+    "camera_id": "CAM_01_GATE",
+    "start_time_sec": 520.0,
+    "end_time_sec": 528.2,
+    "best_timestamp_sec": 524.1,
+    "object_class": "car",
+    "crop_url": "/mock_crops/track_301.jpg",
+    "is_ir_night_mode": false,
+    "avg_saturation": 36.4,
+    "trajectory": [
+      { "timestamp_sec": 520.0, "x1": 150, "y1": 250, "x2": 420, "y2": 480, "cx": 285, "cy": 365 },
+      { "timestamp_sec": 522.0, "x1": 240, "y1": 260, "x2": 530, "y2": 500, "cx": 385, "cy": 380 },
+      { "timestamp_sec": 524.1, "x1": 350, "y1": 280, "x2": 660, "y2": 520, "cx": 505, "cy": 400 },
+      { "timestamp_sec": 526.2, "x1": 480, "y1": 290, "x2": 800, "y2": 540, "cx": 640, "cy": 415 },
+      { "timestamp_sec": 528.2, "x1": 620, "y1": 310, "x2": 950, "y2": 570, "cx": 785, "cy": 440 }
+    ],
+    "similarity_score": 0.778,
+    "gemini_verification": "VERIFIED: White commercial utility van with side sliding door. Green commercial registration plate.",
+    "sha256_frame_hash": "123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef6"
+  },
+  {
+    "track_id": 302,
+    "camera_id": "CAM_03_NH48",
+    "start_time_sec": 710.0,
+    "end_time_sec": 732.5,
+    "best_timestamp_sec": 720.0,
+    "object_class": "car",
+    "crop_url": "/mock_crops/track_302.jpg",
+    "is_ir_night_mode": false,
+    "avg_saturation": 41.8,
+    "trajectory": [
+      { "timestamp_sec": 710.0, "x1": 500, "y1": 320, "x2": 780, "y2": 530, "cx": 640, "cy": 425 },
+      { "timestamp_sec": 715.0, "x1": 505, "y1": 322, "x2": 785, "y2": 532, "cx": 645, "cy": 427 },
+      { "timestamp_sec": 720.0, "x1": 510, "y1": 325, "x2": 790, "y2": 535, "cx": 650, "cy": 430 },
+      { "timestamp_sec": 725.0, "x1": 512, "y1": 326, "x2": 792, "y2": 536, "cx": 652, "cy": 431 },
+      { "timestamp_sec": 732.5, "x1": 515, "y1": 328, "x2": 795, "y2": 538, "cx": 655, "cy": 433 }
+    ],
+    "similarity_score": 0.742,
+    "gemini_verification": "VERIFIED: Stationary silver Honda City sedan stopped on NH48 highway shoulder with hazard lights inactive.",
+    "sha256_frame_hash": "23456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef7"
+  }
+]

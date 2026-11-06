@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <rect width="300" height="200" fill="#0f172a"/>
+  <rect x="10" y="10" width="280" height="180" fill="#1e293b" stroke="#3b82f6" stroke-width="2" rx="4"/>
+  <text x="20" y="35" fill="#3b82f6" font-family="monospace" font-size="12" font-weight="bold">[CAM_01_GATE // TRACK #102]</text>
+  <circle cx="150" cy="70" r="20" fill="#94a3b8"/>
+  <rect x="135" y="95" width="30" height="55" fill="#38bdf8" rx="2"/>
+  <rect x="165" y="110" width="25" height="20" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+  <text x="20" y="175" fill="#94a3b8" font-family="monospace" font-size="10">PEDESTRIAN | 01:54.2s</text>
+  <text x="190" y="175" fill="#22c55e" font-family="monospace" font-size="10">DUFFEL BAG</text>
+</svg>

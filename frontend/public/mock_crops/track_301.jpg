@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <rect width="300" height="200" fill="#0f172a"/>
+  <rect x="10" y="10" width="280" height="180" fill="#1e293b" stroke="#38bdf8" stroke-width="2" rx="4"/>
+  <text x="20" y="35" fill="#38bdf8" font-family="monospace" font-size="12" font-weight="bold">[CAM_01_GATE // TRACK #301]</text>
+  <rect x="60" y="80" width="180" height="70" fill="#f8fafc" rx="6"/>
+  <rect x="80" y="90" width="40" height="25" fill="#334155" rx="2"/>
+  <rect x="140" y="90" width="40" height="25" fill="#334155" rx="2"/>
+  <circle cx="100" cy="155" r="14" fill="#0f172a" stroke="#64748b" stroke-width="3"/>
+  <circle cx="200" cy="155" r="14" fill="#0f172a" stroke="#64748b" stroke-width="3"/>
+  <text x="20" y="175" fill="#94a3b8" font-family="monospace" font-size="10">DELIVERY VAN | 08:44.1s</text>
+  <text x="200" y="175" fill="#22c55e" font-family="monospace" font-size="10">ENTRY PERMIT</text>
+</svg>
