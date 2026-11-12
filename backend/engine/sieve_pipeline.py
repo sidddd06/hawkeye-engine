@@ -48,16 +48,6 @@ class MultimodalEmbedder:
         self.model = None
         self.processor = None
 
-        # Check for torch / transformers SigLIP
-        try:
-            import torch
-            from transformers import AutoProcessor, AutoModel
-            model_name = "google/siglip-base-patch16-224"
-            # Optional: initialize if local cache exists
-            # We provide fast fallback projection to guarantee <10ms latency
-        except Exception:
-            pass
-
     def embed_text(self, text: str) -> np.ndarray:
         """Projects text query into 768-dim normalized embedding space."""
         # Semantic keyword hash projection
@@ -214,6 +204,8 @@ class SievePipelineManager:
         """
         start_time = time.time()
         self.telemetry.status = "INDEXING"
+        self.vector_store.clear()
+        self.records = []
 
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
@@ -318,14 +310,24 @@ class SievePipelineManager:
                                 pass
                         pass
 
-                # If no model, generate tactical detection from motion
-                if not detections and in_wake_up_burst:
-                    tid = 101 if not is_ir else 201
-                    cls_name = "motorcycle" if not is_ir else "person"
-                    # Synthetic dynamic box
-                    cx = int((current_frame_idx / total_frames) * (frame_w - 200)) + 100
-                    cy = int(frame_h * 0.55)
-                    detections.append((tid, cls_name, cx - 60, cy - 40, cx + 60, cy + 40))
+                # If no YOLO detections, extract moving contours from the real video frame
+                if not detections and (in_wake_up_burst or is_keyframe) and prev_low_gray is not None:
+                    curr_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    prev_gray_scaled = cv2.resize(prev_low_gray, (frame_w, frame_h))
+                    diff_frame = cv2.absdiff(curr_gray, prev_gray_scaled)
+                    _, diff_thresh = cv2.threshold(diff_frame, 30, 255, cv2.THRESH_BINARY)
+                    diff_thresh = cv2.dilate(diff_thresh, None, iterations=2)
+                    contours, _ = cv2.findContours(diff_thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    dyn_tid = 1
+                    for cnt in contours:
+                        area = cv2.contourArea(cnt)
+                        if area >= 2500:  # Minimum 50x50px filter
+                            mx, my, mw, mh = cv2.boundingRect(cnt)
+                            obj_cls = "person" if mh > mw else "object"
+                            detections.append((dyn_tid, obj_cls, mx, my, mx + mw, my + mh))
+                            dyn_tid += 1
+                            if len(detections) >= 5:
+                                break
 
                 for tid, cls_name, x1, y1, x2, y2 in detections:
                     # Fix 2: 50x50px Minimum Area Filter
@@ -439,26 +441,40 @@ class SievePipelineManager:
         return self.telemetry
 
     def start_indexing(self, video_path: str, camera_id: str = "CAM_01_GATE") -> SieveTelemetry:
-        base_dir = Path(__file__).resolve().parent.parent.parent
-        resolved_path = base_dir / "shared_mock_data" / "sample_cctv_feed.mp4"
-        if not resolved_path.exists():
-            resolved_path = Path(video_path)
-        return self.process_video_feed(str(resolved_path), camera_id)
+        p = Path(video_path)
+        if not p.exists():
+            base_dir = Path(__file__).resolve().parent.parent.parent
+            fallback = base_dir / "shared_mock_data" / "sample_cctv_feed.mp4"
+            if fallback.exists():
+                p = fallback
+        return self.process_video_feed(str(p), camera_id)
 
     def search_text(self, query: str, top_k: int = 5, camera_filter: Optional[str] = None) -> List[TrackletRecord]:
         """
         Multimodal search using SigLIP 768-dim vector embeddings + FAISS.
         """
+        if not query or not query.strip():
+            # When query is empty, return all real indexed records for active video
+            filtered = [r for r in self.records if not camera_filter or r.camera_id == camera_filter]
+            return filtered[:top_k] if top_k else filtered
+
         query_vec = self.embedder.embed_text(query)
         matches = self.vector_store.search(query_vec, top_k=top_k * 2)
 
+        q_lower = query.lower()
         results = []
         for rec, score in matches:
             if camera_filter and rec.camera_id != camera_filter:
                 continue
 
-            # Normalize score into forensic percentage (0.65 - 0.98)
-            norm_score = round(min(0.98, max(0.65, float(score * 0.4 + 0.6))), 3)
+            bonus = 0.0
+            if rec.object_class.lower() in q_lower or q_lower in rec.object_class.lower():
+                bonus = 0.15
+            elif rec.gemini_verification and any(w in rec.gemini_verification.lower() for w in q_lower.split() if len(w) > 3):
+                bonus = 0.10
+
+            # Normalize score into forensic percentage (0.65 - 0.99)
+            norm_score = round(min(0.99, max(0.65, float(score * 0.4 + 0.6) + bonus)), 3)
             rec_dict = rec.model_dump()
             rec_dict["similarity_score"] = norm_score
             results.append(TrackletRecord(**rec_dict))

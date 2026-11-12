@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { TrackletRecord } from "@/types/contract";
 
 // ============================================================================
 // Types matching POST /api/spatial/multicam-handoff request/response
@@ -161,7 +162,15 @@ function formatETA(sec: number): string {
 // Component
 // ============================================================================
 
-export const MultiCamEscalation: React.FC = () => {
+export interface MultiCamEscalationProps {
+  tracklets?: TrackletRecord[] | null;
+  videoUrl?: string;
+}
+
+export const MultiCamEscalation: React.FC<MultiCamEscalationProps> = ({
+  tracklets = null,
+  videoUrl = "/sample_cctv_feed.mp4",
+}) => {
   const [response, setResponse] = useState<MultiCamHandoffResponse>(FALLBACK_RESPONSE);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCamera, setSelectedCamera] = useState<string | null>(null);
@@ -169,17 +178,27 @@ export const MultiCamEscalation: React.FC = () => {
   const [animProgress, setAnimProgress] = useState(0);
   const [highlightedCam, setHighlightedCam] = useState<string | null>(FALLBACK_RESPONSE.recommended_intercept_camera_id);
 
+  const hasRealTracklets = Boolean(tracklets && tracklets.length > 0);
+  const activeTracklet = hasRealTracklets && tracklets ? tracklets[0] : null;
+
   // -- API call --
   const fetchHandoff = useCallback(async () => {
     setIsLoading(true);
+    const realTraj = (activeTracklet && activeTracklet.trajectory && activeTracklet.trajectory.length > 0)
+      ? activeTracklet.trajectory.map((pt) => ({
+          timestamp_sec: pt.timestamp_sec,
+          bbox: [pt.x1, pt.y1, pt.x2, pt.y2],
+        }))
+      : [
+          { timestamp_sec: 100.0, bbox: [960, 500, 1000, 600] },
+          { timestamp_sec: 101.5, bbox: [1050, 700, 1100, 850] },
+          { timestamp_sec: 103.0, bbox: [1180, 900, 1240, 1050] },
+        ];
+
     const body = {
-      track_id: "SUSPECT_42",
-      origin_camera_id: response.origin_camera_id,
-      trajectory: [
-        { timestamp_sec: 100.0, bbox: [960, 500, 1000, 600] },
-        { timestamp_sec: 101.5, bbox: [1050, 700, 1100, 850] },
-        { timestamp_sec: 103.0, bbox: [1180, 900, 1240, 1050] },
-      ],
+      track_id: activeTracklet ? `TRACK_${activeTracklet.track_id}` : "SUSPECT_42",
+      origin_camera_id: activeTracklet?.camera_id || response.origin_camera_id,
+      trajectory: realTraj,
     };
     try {
       const res = await fetch("http://localhost:8000/api/spatial/multicam-handoff", {
@@ -196,7 +215,7 @@ export const MultiCamEscalation: React.FC = () => {
       setResponse(FALLBACK_RESPONSE);
     }
     setIsLoading(false);
-  }, [response.origin_camera_id]);
+  }, [activeTracklet, response.origin_camera_id]);
 
   // Auto-fetch on mount
   useEffect(() => { fetchHandoff(); }, []);

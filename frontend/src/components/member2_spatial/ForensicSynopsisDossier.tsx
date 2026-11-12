@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { TrackletRecord } from "@/types/contract";
 
 // ============================================================================
 // Types matching POST /api/spatial/synopsis-dossier request/response
@@ -153,7 +154,15 @@ function formatDuration(sec: number): string {
 
 type ViewTab = "synopsis" | "dossier";
 
-export const ForensicSynopsisDossier: React.FC = () => {
+export interface ForensicSynopsisDossierProps {
+  tracklets?: TrackletRecord[] | null;
+  videoUrl?: string;
+}
+
+export const ForensicSynopsisDossier: React.FC<ForensicSynopsisDossierProps> = ({
+  tracklets = null,
+  videoUrl = "/sample_cctv_feed.mp4",
+}) => {
   const [response, setResponse] = useState<SynopsisDossierResponse>(FALLBACK_RESPONSE);
   const [isLoading, setIsLoading] = useState(false);
   const [activeView, setActiveView] = useState<ViewTab>("synopsis");
@@ -163,20 +172,39 @@ export const ForensicSynopsisDossier: React.FC = () => {
   const [isPrintView, setIsPrintView] = useState(false);
   const playIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const hasRealTracklets = Boolean(tracklets && tracklets.length > 0);
+
   // -- API call --
   const fetchDossier = useCallback(async () => {
     setIsLoading(true);
+    let detectionsPayload = [
+      { detection_id: "det_1", track_id: "42", camera_id: "CAM_01_GATE", timestamp_sec: 3600.0, bbox: [200, 300, 280, 420], object_class: "motorcycle", confidence: 0.96 },
+      { detection_id: "det_2", track_id: "42", camera_id: "CAM_01_GATE", timestamp_sec: 3608.0, bbox: [400, 450, 480, 560], object_class: "motorcycle", confidence: 0.95 },
+      { detection_id: "det_3", track_id: "42", camera_id: "CAM_02_HOSTEL_RD", timestamp_sec: 3650.0, bbox: [500, 600, 580, 700], object_class: "motorcycle", confidence: 0.92, is_ir_night: true },
+      { detection_id: "det_4", track_id: "42", camera_id: "CAM_03_NH48", timestamp_sec: 3700.0, bbox: [300, 400, 400, 520], object_class: "motorcycle", confidence: 0.90 },
+      { detection_id: "det_5", track_id: "88", camera_id: "CAM_01_GATE", timestamp_sec: 14400.0, bbox: [100, 200, 160, 350], object_class: "person", confidence: 0.88 },
+      { detection_id: "det_6", track_id: "101", camera_id: "CAM_05_NORTH_PERIMETER", timestamp_sec: 8100.0, bbox: [600, 100, 680, 300], object_class: "person", confidence: 0.85, is_ir_night: true },
+    ];
+
+    if (hasRealTracklets && tracklets) {
+      detectionsPayload = tracklets.flatMap((t) =>
+        t.trajectory.map((pt, idx) => ({
+          detection_id: `det_${t.track_id}_${idx}`,
+          track_id: String(t.track_id),
+          camera_id: t.camera_id,
+          timestamp_sec: pt.timestamp_sec,
+          bbox: [pt.x1, pt.y1, pt.x2, pt.y2],
+          object_class: t.object_class,
+          confidence: t.similarity_score || 0.95,
+          is_ir_night: t.is_ir_night_mode,
+        }))
+      );
+    }
+
     const body = {
-      case_id: "CASE-NOIDA-CCTV-042",
+      case_id: hasRealTracklets ? "CASE-LIVE-SURVEILLANCE" : "CASE-NOIDA-CCTV-042",
       target_synopsis_duration_sec: 60.0,
-      detections: [
-        { detection_id: "det_1", track_id: "42", camera_id: "CAM_01_GATE", timestamp_sec: 3600.0, bbox: [200, 300, 280, 420], object_class: "motorcycle", confidence: 0.96 },
-        { detection_id: "det_2", track_id: "42", camera_id: "CAM_01_GATE", timestamp_sec: 3608.0, bbox: [400, 450, 480, 560], object_class: "motorcycle", confidence: 0.95 },
-        { detection_id: "det_3", track_id: "42", camera_id: "CAM_02_HOSTEL_RD", timestamp_sec: 3650.0, bbox: [500, 600, 580, 700], object_class: "motorcycle", confidence: 0.92, is_ir_night: true },
-        { detection_id: "det_4", track_id: "42", camera_id: "CAM_03_NH48", timestamp_sec: 3700.0, bbox: [300, 400, 400, 520], object_class: "motorcycle", confidence: 0.90 },
-        { detection_id: "det_5", track_id: "88", camera_id: "CAM_01_GATE", timestamp_sec: 14400.0, bbox: [100, 200, 160, 350], object_class: "person", confidence: 0.88 },
-        { detection_id: "det_6", track_id: "101", camera_id: "CAM_05_NORTH_PERIMETER", timestamp_sec: 8100.0, bbox: [600, 100, 680, 300], object_class: "person", confidence: 0.85, is_ir_night: true },
-      ],
+      detections: detectionsPayload,
     };
     try {
       const res = await fetch("http://localhost:8000/api/spatial/synopsis-dossier", {
@@ -192,9 +220,9 @@ export const ForensicSynopsisDossier: React.FC = () => {
       setResponse(FALLBACK_RESPONSE);
     }
     setIsLoading(false);
-  }, []);
+  }, [hasRealTracklets, tracklets]);
 
-  useEffect(() => { fetchDossier(); }, []);
+  useEffect(() => { fetchDossier(); }, [fetchDossier]);
 
   // -- Synopsis playhead animation --
   useEffect(() => {

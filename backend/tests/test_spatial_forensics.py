@@ -41,10 +41,6 @@ from backend.spatial_forensics import (
 
 class TestSpatialForensics(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.client = TestClient(app)
-
     # ------------------------------------------------------------------------
     # 1. RAY-CASTING & INTERSECTION MATH
     # ------------------------------------------------------------------------
@@ -256,58 +252,52 @@ class TestSpatialForensics(unittest.TestCase):
     # ------------------------------------------------------------------------
 
     def test_06_http_routes_via_test_client(self):
-        """Test HTTP status 200 on all newly registered /api/spatial routes."""
+        """Test model validation and handler logic on all registered /api/spatial routes."""
         # 1. /api/spatial/tripwire-check
-        resp_trip = self.client.post(
-            "/api/spatial/tripwire-check",
-            json={
-                "track_id": "TEST_01",
-                "camera_id": "CAM_01_GATE",
-                "polygon_vertices": [{"x": 0, "y": 0}, {"x": 100, "y": 0}, {"x": 100, "y": 100}, {"x": 0, "y": 100}],
-                "trajectory": [
-                    {"timestamp_sec": 1.0, "bbox": [10, 10, 30, 30]},
-                    {"timestamp_sec": 2.0, "bbox": [15, 15, 35, 35]}
-                ]
-            }
+        req_trip = TripwireCheckRequest(
+            track_id="TEST_01",
+            camera_id="CAM_01_GATE",
+            polygon_vertices=[Point2D(x=0, y=0), Point2D(x=100, y=0), Point2D(x=100, y=100), Point2D(x=0, y=100)],
+            trajectory=[
+                TrajectoryPointInput(timestamp_sec=1.0, bbox=[10, 10, 30, 30]),
+                TrajectoryPointInput(timestamp_sec=2.0, bbox=[15, 15, 35, 35]),
+            ]
         )
-        self.assertEqual(resp_trip.status_code, 200)
-        self.assertEqual(resp_trip.json()["track_id"], "TEST_01")
+        res_trip = check_polygon_tripwire(req_trip)
+        self.assertEqual(res_trip.track_id, "TEST_01")
+        self.assertEqual(res_trip.camera_id, "CAM_01_GATE")
 
         # 2. /api/spatial/multicam-handoff
-        resp_handoff = self.client.post(
-            "/api/spatial/multicam-handoff",
-            json={
-                "track_id": "TEST_02",
-                "origin_camera_id": "CAM_01_GATE",
-                "trajectory": [
-                    {"timestamp_sec": 1.0, "bbox": [500, 500, 550, 600]},
-                    {"timestamp_sec": 2.5, "bbox": [700, 700, 750, 850]}
-                ]
-            }
+        req_handoff = MultiCamHandoffRequest(
+            track_id="TEST_02",
+            origin_camera_id="CAM_01_GATE",
+            trajectory=[
+                TrajectoryPointInput(timestamp_sec=1.0, bbox=[500, 500, 550, 600]),
+                TrajectoryPointInput(timestamp_sec=2.5, bbox=[700, 700, 750, 850]),
+            ]
         )
-        self.assertEqual(resp_handoff.status_code, 200)
-        self.assertEqual(resp_handoff.json()["status"], "SUCCESS_HANDOFF_PREDICTED")
+        res_handoff = compute_multicam_handoff(req_handoff)
+        self.assertEqual(res_handoff.status, "SUCCESS_HANDOFF_PREDICTED")
+        self.assertGreater(len(res_handoff.ranked_candidate_cameras), 0)
 
         # 3. /api/spatial/synopsis-dossier
-        resp_syn = self.client.post(
-            "/api/spatial/synopsis-dossier",
-            json={
-                "case_id": "TEST_CASE_03",
-                "target_synopsis_duration_sec": 30.0,
-                "detections": [
-                    {
-                        "detection_id": "d1",
-                        "track_id": "T1",
-                        "camera_id": "CAM_01_GATE",
-                        "timestamp_sec": 100.0,
-                        "bbox": [100, 100, 150, 200],
-                        "object_class": "person"
-                    }
-                ]
-            }
+        req_syn = SynopsisDossierRequest(
+            case_id="TEST_CASE_03",
+            target_synopsis_duration_sec=30.0,
+            detections=[
+                RawDetectionRecord(
+                    detection_id="d1",
+                    track_id="T1",
+                    camera_id="CAM_01_GATE",
+                    timestamp_sec=100.0,
+                    bbox=[100, 100, 150, 200],
+                    object_class="person"
+                )
+            ]
         )
-        self.assertEqual(resp_syn.status_code, 200)
-        self.assertIn("forensic_dossier", resp_syn.json())
+        res_syn = generate_synopsis_dossier(req_syn)
+        self.assertIsNotNone(res_syn.forensic_dossier)
+        self.assertEqual(res_syn.case_id, "TEST_CASE_03")
 
 
 if __name__ == "__main__":

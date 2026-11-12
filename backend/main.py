@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sse_starlette.sse import EventSourceResponse
@@ -105,12 +106,56 @@ async def upload_and_index_video(
     with open(saved_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
+    # Mirror to frontend public directory for instant direct static playback
+    public_upload_dir = Path(__file__).resolve().parent.parent / "frontend" / "public" / "uploads"
+    try:
+        public_upload_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy(str(saved_path), str(public_upload_dir / file.filename))
+    except Exception:
+        pass
+
     telemetry = sieve_pipeline.process_video_feed(str(saved_path), camera_id=camera_id)
+    all_tracklets = sieve_pipeline.get_all_tracklets()
     return {
         "message": "Video successfully uploaded and indexed via 4-Stage Sieve",
         "filename": file.filename,
+        "video_url": f"http://localhost:8000/api/video/{file.filename}",
+        "tracklets": [t.model_dump() for t in all_tracklets],
         "telemetry": telemetry,
     }
+
+
+@app.get("/api/video/stream")
+def stream_latest_video():
+    """Streams the most recently uploaded CCTV video, or falls back to sample feed."""
+    upload_files = list(UPLOAD_DIR.glob("*.*"))
+    if upload_files:
+        latest = max(upload_files, key=lambda p: p.stat().st_mtime)
+        return FileResponse(str(latest), media_type="video/mp4")
+    sample_path = Path(__file__).resolve().parent.parent / "shared_mock_data" / "sample_cctv_feed.mp4"
+    if sample_path.exists():
+        return FileResponse(str(sample_path), media_type="video/mp4")
+    frontend_sample = Path(__file__).resolve().parent.parent / "frontend" / "public" / "sample_cctv_feed.mp4"
+    if frontend_sample.exists():
+        return FileResponse(str(frontend_sample), media_type="video/mp4")
+    raise HTTPException(status_code=404, detail="No video feed available")
+
+
+@app.get("/api/video/{filename}")
+def stream_video_by_name(filename: str):
+    """Streams an uploaded or shared CCTV video by filename."""
+    file_path = UPLOAD_DIR / filename
+    if not file_path.exists():
+        alt_path = Path(__file__).resolve().parent.parent / "shared_mock_data" / filename
+        if alt_path.exists():
+            file_path = alt_path
+        else:
+            public_path = Path(__file__).resolve().parent.parent / "frontend" / "public" / filename
+            if public_path.exists():
+                file_path = public_path
+            else:
+                raise HTTPException(status_code=404, detail=f"Video file {filename} not found")
+    return FileResponse(str(file_path), media_type="video/mp4")
 
 
 @app.get("/api/tracklets", response_model=List[TrackletRecord])

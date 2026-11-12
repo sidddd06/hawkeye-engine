@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { TrackletRecord } from "@/types/contract";
 
 // ============================================================================
 // Types matching POST /api/spatial/tripwire-check request/response
@@ -127,7 +128,15 @@ const STATE_LABEL: Record<IntrusionState, { icon: string; label: string }> = {
 // Component
 // ============================================================================
 
-export const PolygonTripwire: React.FC = () => {
+export interface PolygonTripwireProps {
+  tracklets?: TrackletRecord[] | null;
+  videoUrl?: string;
+}
+
+export const PolygonTripwire: React.FC<PolygonTripwireProps> = ({
+  tracklets = null,
+  videoUrl = "/sample_cctv_feed.mp4",
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
 
@@ -135,7 +144,23 @@ export const PolygonTripwire: React.FC = () => {
   const [polygonVerts, setPolygonVerts] = useState<Point2D[]>(FALLBACK_POLYGON);
   const [tripwire, setTripwire] = useState<DirectionalTripwire>(FALLBACK_TRIPWIRE);
   const [tripwireStart, setTripwireStart] = useState<Point2D | null>(null);
-  const [trajectory] = useState<TrajectoryPointInput[]>(FALLBACK_TRAJECTORY);
+  const [selectedTrackIndex, setSelectedTrackIndex] = useState<number>(0);
+
+  const hasRealTracklets = Boolean(tracklets && tracklets.length > 0);
+  const activeTracklet = hasRealTracklets && tracklets ? tracklets[Math.min(selectedTrackIndex, tracklets.length - 1)] : null;
+
+  const trajectory = useMemo<TrajectoryPointInput[]>(() => {
+    if (activeTracklet && activeTracklet.trajectory && activeTracklet.trajectory.length > 0) {
+      return activeTracklet.trajectory.map((pt) => ({
+        timestamp_sec: pt.timestamp_sec,
+        point: {
+          x: Math.round(((pt.x1 + pt.x2) / 2) * (700 / 1280.0)),
+          y: Math.round(pt.y2 * (500 / 720.0)),
+        },
+      }));
+    }
+    return FALLBACK_TRAJECTORY;
+  }, [activeTracklet]);
 
   const [response, setResponse] = useState<TripwireCheckResponse>(FALLBACK_RESPONSE);
   const [isLoading, setIsLoading] = useState(false);
@@ -150,15 +175,15 @@ export const PolygonTripwire: React.FC = () => {
   const evaluateTripwire = useCallback(async (overrideTrajectory?: TrajectoryPointInput[]) => {
     setIsLoading(true);
     const body = {
-      track_id: "42",
-      camera_id: "CAM_01_GATE",
+      track_id: activeTracklet ? String(activeTracklet.track_id) : "42",
+      camera_id: activeTracklet ? activeTracklet.camera_id : "CAM_01_GATE",
       polygon_vertices: polygonVerts,
       directional_tripwires: [tripwire],
       trajectory: overrideTrajectory || trajectory,
       evaluation_point: "point",
       min_dwell_sec: 1.5,
       zone_name: "RESTRICTED_SECURITY_ZONE",
-      object_class: "person",
+      object_class: activeTracklet ? activeTracklet.object_class : "person",
     };
     try {
       const res = await fetch("http://localhost:8000/api/spatial/tripwire-check", {
