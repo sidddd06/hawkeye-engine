@@ -54,3 +54,39 @@
   - **Backend:** FastAPI (Python 3.10+, PyAV, Ultralytics YOLOv8, Transformers, PyTorch, FAISS, Shapely).
   - **Communication:** REST API for search/configuration + WebSocket/Server-Sent Events (SSE) for streaming real-time ingestion telemetry (FPS, frame count, discarded percentage, GPU memory usage).
 * **Consequences:** Clean separation of concerns, rapid UI responsiveness, real-time forensic feedback, and smooth timeline scrubbing.
+
+---
+
+## Decision D-06: Real-Time SSE Telemetry Streaming Protocol
+* **Date:** 2026-11-06
+* **Status:** Accepted
+* **Context:** Ingesting 12-hour video files requires continuous real-time progress feedback (frames processed, keyframes checked, motion frames woken, drop percentage) without heavy WebSocket handshake overhead.
+* **Decision:** Implement Server-Sent Events (`/api/telemetry/stream` via `sse-starlette`) consumed by an `EventSource` in the Next.js `IngestionTelemetry` component.
+* **Consequences:** Unidirectional lightweight streaming with automatic HTTP reconnection and zero socket lifecycle management complexity.
+
+---
+
+## Decision D-07: Universal WebAssembly Compiler for Next.js 14 Build
+* **Date:** 2026-11-06
+* **Status:** Accepted
+* **Context:** Modern Node.js v26 under Windows sandbox encountered an ABI format discrepancy with native precompiled C++ SWC binaries (`next-swc.win32-x64-msvc.node`).
+* **Decision:** Adopt `@next/swc-wasm-nodejs` for production compilation.
+* **Consequences:** 100% deterministic compilation across all developer machines regardless of local C++ runtime libraries.
+
+---
+
+## Decision D-08: 60 FPS requestAnimationFrame HUD Overlay Engine
+* **Date:** 2026-11-06
+* **Status:** Accepted
+* **Context:** HTML5 video `timeupdate` fires at low and erratic frequencies (4–15 Hz), causing bounding box overlays to stutter when suspects move across frames.
+* **Decision:** Decouple canvas rendering into a continuous browser `requestAnimationFrame` loop in `SearchAndPlayer.tsx` that samples `video.currentTime` every frame.
+* **Consequences:** Silk-smooth 60 FPS bounding-box overlays, zero visual jitter during high-speed motorcycle playback, and instant sync upon scrubbing.
+
+---
+
+## Decision D-09: 1-Click Judge Demo Scenario Modal
+* **Date:** 2026-11-06
+* **Status:** Accepted
+* **Context:** Live hackathon stage judges have 3 minutes to evaluate the system and cannot wait for a live 12-hour file upload or manual bounding setup.
+* **Decision:** Add a prominent "⚡ JUDGE DEMO MODE" top-header button triggering 3 instant scenario presets (Motorcycle Escape, IR Perimeter Breach, Pedestrian Duffel Bag) with instant telemetry and tracklet loading.
+* **Consequences:** Eliminates live demo risk, enables guaranteed 0-friction presentations, and showcases all 4 mandatory mitigations on demand.

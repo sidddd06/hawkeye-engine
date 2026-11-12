@@ -2,13 +2,19 @@
 backend/main.py
 Lead Software Architect - HawkEye / BountyCam
 FastAPI Backend Gateway connecting Member 1 (Engine) and Member 2 (Spatial)
+Includes Real-Time SSE Telemetry Streaming & File Upload Ingestion
 """
 
+import os
+import shutil
+import asyncio
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import List, Optional
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sse_starlette.sse import EventSourceResponse
 
 from backend.schemas import (
     HealthResponse,
@@ -37,7 +43,6 @@ app = FastAPI(
     description="Zero-Cloud 12-Hour CCTV Forensics & Multimodal Search Engine",
 )
 
-# Enable permissive CORS for frontend integration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -45,6 +50,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Upload directory
+UPLOAD_DIR = Path(__file__).resolve().parent.parent / "shared_mock_data" / "uploads"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 
 @app.get("/api/health", response_model=HealthResponse)
@@ -65,10 +74,43 @@ def get_telemetry():
     return sieve_pipeline.get_telemetry()
 
 
+@app.get("/api/telemetry/stream")
+async def stream_telemetry():
+    """Streams live frame counters, discarding ratios, and GPU status via SSE."""
+    async def event_generator():
+        while True:
+            telemetry = sieve_pipeline.get_telemetry()
+            yield {
+                "event": "telemetry",
+                "data": telemetry.model_dump_json()
+            }
+            await asyncio.sleep(0.5)
+
+    return EventSourceResponse(event_generator())
+
+
 @app.post("/api/index", response_model=SieveTelemetry)
 def index_video(req: IndexVideoRequest):
     """Executes the 4-Stage Cascading Sieve on raw surveillance video."""
     return sieve_pipeline.start_indexing(video_path=req.video_path, camera_id=req.camera_id)
+
+
+@app.post("/api/upload")
+async def upload_and_index_video(
+    file: UploadFile = File(...),
+    camera_id: str = Form("CAM_01_GATE")
+):
+    """Uploads a local CCTV video file and triggers the 4-stage cascading sieve."""
+    saved_path = UPLOAD_DIR / file.filename
+    with open(saved_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    telemetry = sieve_pipeline.process_video_feed(str(saved_path), camera_id=camera_id)
+    return {
+        "message": "Video successfully uploaded and indexed via 4-Stage Sieve",
+        "filename": file.filename,
+        "telemetry": telemetry,
+    }
 
 
 @app.get("/api/tracklets", response_model=List[TrackletRecord])
@@ -134,3 +176,10 @@ def get_synopsis(req: SynopsisRequest):
 def get_dossier(track_id: int):
     """Generates court-admissible forensic dossier with SHA-256 seal."""
     return generate_dossier(track_id=track_id)
+
+
+# --- Member 2 Spatial Forensics & Synopsis Router ---
+from backend.spatial_forensics import router as spatial_forensics_router
+
+app.include_router(spatial_forensics_router)
+
